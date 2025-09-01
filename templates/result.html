@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="result-container">
+    <div class="result-header">
+        <div class="result-badge">
+            {% if result.label == 'REAL' %}
+                <span class="badge-icon">❌</span>
+            {% else %}
+                <span class="badge-icon">✅</span>
+            {% endif %}
+        </div>
+        <h2 class="result-title">Analysis Complete!</h2>
+        <div class="confidence-meter">
+            <div class="meter-label">Confidence Level</div>
+            <div class="meter-value">{{ (result.confidence*100)|round(2) }}%</div>
+            <div class="meter-bar">
+                <div class="meter-fill" style="width: {{ (result.confidence*100)|round(2) }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-cards">
+        <div class="card verification-card">
+            <div class="card-header">
+                <h3>Verification Result</h3>
+                <span class="card-icon">🔍</span>
+            </div>
+            <div class="card-content">
+                <div class="result-label {{ result.label.lower() }}">
+                    {{ result.label }}
+                </div>
+                <p class="explanation">{{ result.explanation }}</p>
+            </div>
+        </div>
+
+        <div class="card sources-card">
+            <div class="card-header">
+                <h3>Sources Found</h3>
+                <span class="card-icon">📚</span>
+            </div>
+            <div class="card-content">
+                <ul class="source-list">
+                    {% for source in result.source.split(',') %}
+                    <li>
+                        <span class="source-icon">📄</span>
+                        {{ source }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-results">
+        <h3>Quiz Performance</h3>
+        <div class="quiz-grid">
+            {% for q in quiz %}
+            <div class="quiz-item {{ 'correct' if q.selected == q.answer else 'incorrect' }}">
+                <div class="question-text">{{ q.question }}</div>
+                <div class="answer-comparison">
+                    <div class="your-answer">
+                        <span class="label">Your Answer:</span>
+                        <span class="value">{{ q.selected }}</span>
+                    </div>
+                    <div class="correct-answer">
+                        <span class="label">Correct:</span>
+                        <span class="value">{{ q.answer }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="confidenceChart"></canvas>
+    </div>
+
+    <a href="{{ url_for('index') }}" class="btn-return">
+        <span class="btn-icon">🏠</span>
+        Return to Home
+    </a>
+</div>
+
+<style>
+:root {
+    --primary-color: #4f46e5;
+    --success-color: #22c55e;
+    --error-color: #ef4444;
+    --background: #f8fafc;
+    --card-bg: #ffffff;
+}
+
+.result-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--background);
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.result-badge {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.result-title {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.confidence-meter {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.meter-label {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.meter-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.meter-bar {
+    height: 20px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #818cf8);
+    transition: width 1s ease-in-out;
+}
+
+.result-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.result-label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.result-label.real {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-color);
+}
+
+.result-label.fake {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.quiz-results {
+    margin-top: 3rem;
+}
+
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.quiz-item {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-item.correct {
+    border-left: 4px solid var(--success-color);
+}
+
+.quiz-item.incorrect {
+    border-left: 4px solid var(--error-color);
+}
+
+.question-text {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.answer-comparison {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.your-answer, .correct-answer {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+}
+
+.chart-container {
+    max-width: 400px;
+    margin: 3rem auto;
+}
+
+.btn-return {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.btn-return:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .result-container {
+        padding: 1rem;
+    }
+    
+    .result-title {
+        font-size: 2rem;
+    }
+    
+    .result-cards {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Update the chart configuration for a more gamified look
+const ctx = document.getElementById('confidenceChart').getContext('2d');
+const data = {
+    labels: ['Confidence', 'Uncertainty'],
+    datasets: [{
+        data: [{{ (result.confidence*100)|round(2) }}, {{ 100-(result.confidence*100)|round(2) }}],
+        backgroundColor: ['#4f46e5', '#e2e8f0'],
+        borderWidth: 0,
+    }]
+};
+new Chart(ctx, {
+    type: 'doughnut',
+    data: data,
+    options: {
+        cutout: '70%',
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true
+        }
+    }
+});
+</script>
+
+{% endblock %}

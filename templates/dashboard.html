@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-container">
+    <div class="hero-section">
+        <h1>Your Progress</h1>
+        <p class="subtitle">Track your fact-checking journey</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card points">
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.points }}</span>
+                <span class="stat-label">Total Points</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ stats.points*10 }} %"></div>
+                </div>
+                <span class="progress-text">{{ stats.points*10 }}% to next level</span>
+            </div>
+        </div>
+
+        <div class="stat-card badges">
+            <div class="stat-content">
+                <div class="badges-grid">
+                    {% for badge in stats.badges %}
+                    <div class="badge-item">
+                        <span class="badge-icon">🏅</span>
+                        <span class="badge-name">{{ badge }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <span class="stat-label">Earned Badges</span>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --background: #f5f5f7;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --accent: #0071e3;
+    --card-bg: #ffffff;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--background);
+    min-height: 100vh;
+}
+
+.hero-section {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #1d1d1f, #434344);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.stat-content {
+    margin-bottom: 1.5rem;
+}
+
+.stat-value {
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+.progress-wrapper {
+    margin-top: 1.5rem;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #e5e5e5;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 1s ease-in-out;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f5f5f7;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.badge-item:hover {
+    transform: scale(1.05);
+}
+
+.badge-icon {
+    font-size: 2rem;
+}
+
+.badge-name {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+    }
+}
+</style>
+{% endblock %}

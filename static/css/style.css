@@ -1,0 +1,314 @@
+/* ======= General Reset ======= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(120deg, #f0f4ff, #d9e2ff);
+    color: #333;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+    position: relative;
+}
+
+/* ======= Hero Header ======= */
+header {
+    background: linear-gradient(135deg, #1e90ff, #4facfe);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    animation: floatHeader 6s ease-in-out infinite;
+}
+
+header h1 {
+    font-size: 36px;
+    text-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Floating header animation */
+@keyframes floatHeader {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ======= Navigation ======= */
+nav {
+    display: flex;
+    justify-content: center;
+    background-color: rgba(255,255,255,0.9);
+    padding: 15px 0;
+    margin-bottom: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    margin: 0 20px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    background: linear-gradient(90deg, #4facfe, #1e90ff);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+/* ======= Cards ======= */
+.card, .result-card, .quiz-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover, .quiz-card:hover, .result-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+}
+
+/* Glossy overlay effect */
+.card::after, .quiz-card::after, .result-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.25), transparent 60%);
+    transform: rotate(25deg);
+    pointer-events: none;
+}
+
+/* ======= Progress Bar ======= */
+.progress-bar-container {
+    width: 100%;
+    height: 25px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 15px;
+    overflow: hidden;
+    margin-top: 25px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    width: 0%;
+    color: white;
+    text-align: center;
+    line-height: 25px;
+    font-weight: bold;
+    border-radius: 15px;
+    transition: width 1s ease-in-out;
+}
+
+/* ======= News Form ======= */
+.news-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.news-form textarea {
+    width: 100%;
+    padding: 15px;
+    color:#000000;
+    font-size: 16px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    background: rgba(255,255,255,0.9);
+    box-shadow: inset 0 5px 10px rgba(0,0,0,0.05);
+    resize: vertical;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.news-form textarea:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgba(30,144,255,0.5);
+    transform: scale(1.02);
+}
+
+.news-form button.btn-submit {
+    width: 180px;
+    padding: 12px;
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.news-form button.btn-submit:hover {
+    background: linear-gradient(90deg, #81c784, #4caf50);
+    transform: scale(1.05);
+}
+
+/* ======= Quiz ======= */
+.quiz-card p {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.quiz-option {
+    display: block;
+    margin: 10px 0;
+}
+
+.btn-option {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f0f0f0, #d9e2ff);
+    transition: all 0.3s ease;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.btn-option:hover {
+    background: linear-gradient(135deg, #81c784, #4caf50);
+    color: white;
+    transform: translateX(4px);
+}
+
+#answer-feedback {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 16px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ======= Result Card ======= */
+.result-card {
+    line-height: 1.6;
+    font-size: 16px;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    border-left: 6px solid #00acc1;
+}
+
+.result-card a.btn-submit {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    text-align: center;
+}
+
+/* ======= Footer ======= */
+footer {
+    text-align: center;
+    padding: 25px;
+    margin-top: 50px;
+    color: #555;
+    font-size: 15px;
+}
+
+/* ======= Floating Animations ======= */
+@keyframes floatCard {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.card, .quiz-card, .result-card {
+    animation: floatCard 6s ease-in-out infinite;
+}
+
+/* ======= Loading Spinner ======= */
+#loading {
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ======= Pie Chart Container ======= */
+#confidenceChart {
+    max-width: 300px;
+    max-height: 300px;
+    margin: 20px auto;
+    display: block;
+}
+
+/* ======= Quiz Summary ======= */
+.quiz-summary li {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f0f0f0, #d9e2ff);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+}
+
+
+.quiz-card {
+    background: linear-gradient(145deg, #f0f5ff, #ffffff);
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    padding: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+}
+
+.btn-option {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: white;
+    border: none;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.btn-option:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #45a049, #5cb85c);
+}
+
+#answer-feedback {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #ff5722;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
