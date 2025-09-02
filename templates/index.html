@@ -7,6 +7,7 @@
     </div>
     
     <div class="form-container">
+        <!-- Text Verification Form -->
         <form method="POST" class="news-form">
             <div class="input-wrapper">
                 <textarea 
@@ -14,10 +15,23 @@
                     placeholder="Paste your news article here to verify its authenticity..." 
                     required
                 ></textarea>
-                <button type="submit" class="btn-verify">
-                    <span class="btn-icon">🔍</span>
-                    Verify News
-                </button>
+                <div class="button-group">
+                    <button type="submit" class="btn-verify">
+                        <span class="btn-icon">🔍</span>
+                        Verify News
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Image Verification Form -->
+        <form action="/verify-image" method="POST" enctype="multipart/form-data" class="image-form">
+            <div class="button-group">
+                <label for="image-upload" class="btn-upload" title="Upload an image to verify">
+                    <input id="image-upload" type="file" name="news_image" accept="image/*" required hidden>
+                    <span class="upload-icon">🖼️</span>
+                </label>
+                <button type="submit" id="verify-btn">Verify Image</button>
             </div>
         </form>
     </div>
@@ -112,13 +126,18 @@ textarea::placeholder {
     color: var(--text-secondary);
 }
 
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
 .btn-verify {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1rem;
-    width: 100%;
     padding: 1rem 2rem;
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
@@ -128,6 +147,7 @@ textarea::placeholder {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    flex-grow: 1;
 }
 
 .btn-verify:hover {
@@ -138,6 +158,55 @@ textarea::placeholder {
 
 .btn-icon {
     font-size: 1.25rem;
+}
+
+/* Round Upload Button */
+.btn-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.btn-upload:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
+}
+
+.upload-icon {
+    font-size: 1.5rem;
+    color: white;
+}
+
+/* Verify Image Button */
+#verify-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#verify-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #003f88);
+    transform: translateY(-2px);
+}
+
+#verify-btn:active {
+    transform: translateY(0);
+    background: linear-gradient(135deg, #004080, #002d66);
 }
 
 .error-container {

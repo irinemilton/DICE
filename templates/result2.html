@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Verification Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style2.css') }}">
+</head>
+<body>
+  <div class="result-container">
+    <div class="result-header">
+      <h1 class="result-title">🔎 Image Verification Result</h1>
+    </div>
+
+    <div class="result-cards">
+      <div class="card">
+        <div class="card-header">Label</div>
+        <div class="card-content">
+          <p class="result-label {% if result.label == 'Real' %}real{% elif result.label == 'Fake' %}fake{% endif %}">
+            {{ result.label }}
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Confidence</div>
+        <div class="card-content">
+          <div class="meter-bar">
+            <div class="meter-fill" style="width: {{ (result.confidence * 100)|round(2) }}%;"></div>
+          </div>
+          <p class="meter-value">{{ (result.confidence * 100)|round(2) }}%</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Explanation</div>
+        <div class="card-content">
+          <p>{{ result.explanation }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <a href="/" class="btn-return">⬅ Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

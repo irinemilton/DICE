@@ -205,6 +205,113 @@ Text to analyze:
     except Exception as e:
         print("Error calling Gemini API:", e)
         return jsonify({"error": str(e)}), 500
+    
+
+
+@app.route("/verify-image", methods=["POST"])
+def verify_image():
+    if "news_image" not in request.files:
+        return render_template("result2.html", result={
+            "label": "Unknown",
+            "confidence": 0,
+            "explanation": "❌ No image uploaded"
+        })
+
+    image = request.files["news_image"]
+
+    if not GEMINI_API_KEY:
+        return render_template("result2.html", result={
+            "label": "Unknown",
+            "confidence": 0,
+            "explanation": "❌ Gemini API key not configured"
+        })
+
+    try:
+        import base64, json, re
+        image_bytes = image.read()
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+        headers = {"Content-Type": "application/json"}
+        params = {"key": GEMINI_API_KEY}
+
+        prompt = """
+You are a fake news detection AI. Analyze this image and determine if it is real or fake. 
+Respond ONLY in JSON format like this:
+{
+  "label": "Real" or "Fake" or "Unknown",
+  "confidence": float between 0 and 1,
+  "explanation": "detailed reasoning"
+}
+"""
+
+        data = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {"inline_data": {"mime_type": image.mimetype, "data": image_base64}}
+                    ]
+                }
+            ]
+        }
+
+        response = requests.post(GEMINI_URL, headers=headers, params=params, json=data)
+        api_response = response.json()
+
+        # Extract raw text
+        content = (
+            api_response.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        ).strip()
+
+        # Clean up any ```json ... ``` wrapper
+        match = re.search(r'```json\s*(\{.*\})\s*```', content, re.DOTALL)
+        if match:
+            try:
+                parsed = json.loads(match.group(1))
+                label = parsed.get("label", "Unknown")
+                confidence = parsed.get("confidence", 0)
+                explanation = parsed.get("explanation", "")
+            except:
+                label = "Unknown"
+                confidence = 0
+                explanation = content
+        else:
+            try:
+                parsed = json.loads(content)
+                label = parsed.get("label", "Unknown")
+                confidence = parsed.get("confidence", 0)
+                explanation = parsed.get("explanation", "")
+            except:
+                label = "Unknown"
+                confidence = 0
+                explanation = content
+
+        cleaned_result = {
+            "label": label,
+            "confidence": confidence,
+            "explanation": explanation
+        }
+
+        return render_template("result2.html", result=cleaned_result)
+
+    except Exception as e:
+        return render_template("result2.html", result={
+            "label": "Unknown",
+            "confidence": 0,
+            "explanation": f"❌ Error analyzing image: {str(e)}"
+        })
+
+
+
+
+
+
+
+
+
 # -------------------------
 # Run the app
 # -------------------------
