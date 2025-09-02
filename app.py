@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from datetime import datetime, timedelta
-from models.fake_detection import check_text  # Make sure this exists
+from models.fake_detection import check_text
 import os
 import requests
 import json
-from flask_cors import CORS  # Needed for Chrome extension requests
+import re
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests from Chrome extension
@@ -42,10 +43,7 @@ def index():
         if not user_text:
             return render_template("index.html", error="Please enter news text", streak=streak)
 
-        # Get Gemini result
         result = check_text(user_text)
-
-        # Store in session
         session["result"] = result
         session["quiz"] = result.get("quiz", [])
         session["current_question"] = 0
@@ -62,9 +60,7 @@ def index():
 def analysis():
     if "result" not in session:
         return redirect(url_for("index"))
-
-    result_data = session["result"]
-    return render_template("analysis.html", result=result_data)
+    return render_template("analysis.html", result=session["result"])
 
 # -------------------------
 # Quiz page
@@ -77,7 +73,6 @@ def quiz():
     current_index = session.get("current_question", 0)
     quiz_list = session["quiz"]
 
-    # Finished all questions
     if current_index >= len(quiz_list):
         return redirect(url_for("result"))
 
@@ -93,10 +88,7 @@ def quiz():
             session["score"] += 1
 
         session["current_question"] = current_index + 1
-        current_index += 1
-
-        # Finished quiz
-        if current_index >= len(quiz_list):
+        if session["current_question"] >= len(quiz_list):
             return redirect(url_for("result"))
         return redirect(url_for("quiz"))
 
@@ -118,32 +110,29 @@ def result():
     if "result" not in session:
         return redirect(url_for("index"))
 
-    result_data = session["result"]
-    quiz_list = session.get("quiz", [])
     return render_template(
         "result.html",
-        result=result_data,
-        quiz=quiz_list,
+        result=session["result"],
+        quiz=session.get("quiz", []),
         score=session.get("score", 0),
         streak=session.get("streak", 0),
-        total=len(quiz_list)
+        total=len(session.get("quiz", []))
     )
 
 # -------------------------
-# Gemini API key
+# Gemini API settings
 # -------------------------
-GEMINI_API_KEY = "AIzaSyD8bJo-Ym804WQ9KI65Hasmw6lSdgVCuhs"
-# Alternatively, load from environment variable
-GEMINI_API_KEY = os.environ.get("AIzaSyD8bJo-Ym804WQ9KI65Hasmw6lSdgVCuhs", GEMINI_API_KEY)
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyD8bJo-Ym804WQ9KI65Hasmw6lSdgVCuhs")
 if not GEMINI_API_KEY:
     print("Warning: GEMINI_API_KEY not set!")
 
 # -------------------------
-# Analyze endpoint (for Chrome extension)
+# Analyze endpoint (for Chrome extension + API)
 # -------------------------
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    text = request.form.get("text") or request.json.get("text")
+    text = request.json.get("text") if request.is_json else None
     if not text:
         return jsonify({"error": "No text provided"}), 400
 
@@ -151,53 +140,71 @@ def analyze():
         return jsonify({"error": "Gemini API key not configured"}), 500
 
     try:
-        headers = {"Authorization": f"Bearer {GEMINI_API_KEY}"}
-        data = {
-            "prompt": text,
-            "model": "gemini-2.0-flash",
-            "max_output_tokens": 500
-        }
+        headers = {"Content-Type": "application/json"}
+        params = {"key": GEMINI_API_KEY}
 
-        response = requests.post("https://api.openai.com/v1/responses", headers=headers, json=data)
+        # 🔹 Force Gemini to respond with structured JSON
+        prompt = f"""
+You are a fake news detection AI. Analyze the following text and respond ONLY in JSON.
+
+Format:
+{{
+  "label": "Real" or "Fake" or "Unknown",
+  "confidence": a float between 0 and 1,
+  "explanation": "short explanation why you classified it"
+}}
+
+Text to analyze:
+{text}
+"""
+
+        data = {"contents": [{"parts": [{"text": prompt}]}]}
+        response = requests.post(GEMINI_URL, headers=headers, params=params, json=data)
         api_response = response.json()
-        print("Full API response:", api_response)
 
-        # Handle error from API
-        if "error" in api_response:
-            return jsonify({"error": api_response["error"]["message"]}), 500
+        # Extract raw text Gemini returned
+        content = (
+            api_response.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        ).strip()
 
-        # Extract text
-        if "candidates" in api_response:
-            content = api_response["candidates"][0]["content"]["parts"][0]["text"]
-        else:
-            content = "No response from Gemini API"
+        print("Full API response:", json.dumps(api_response, indent=2))
+        print("Gemini content:", content)
 
-        # Try to parse JSON inside content
-        match = None
-        import re
-        match = re.search(r'```json(.*?)```', content, re.DOTALL)
-        if match:
-            result_json = json.loads(match.group(1).strip())
-        else:
+        # Try parsing as JSON directly
+        try:
+            result_json = json.loads(content)
+        except json.JSONDecodeError:
+            # Fallback if Gemini wrapped in ```json ... ```
+            match = re.search(r'```json(.*?)```', content, re.DOTALL)
+            if match:
+                try:
+                    result_json = json.loads(match.group(1).strip())
+                except json.JSONDecodeError:
+                    result_json = None
+            else:
+                result_json = None
+
+        # Default fallback if nothing parsable
+        if not result_json:
             result_json = {
                 "label": "Unknown",
                 "confidence": 0,
-                "source": "N/A",
-                "explanation": content
+                "explanation": content or "No explanation available"
             }
 
         return jsonify({
-            "label": result_json.get("label"),
-            "confidence": result_json.get("confidence"),
-            "source": result_json.get("source"),
-            "explanation": result_json.get("explanation"),
+            "label": result_json.get("label", "Unknown"),
+            "confidence": result_json.get("confidence", 0),
+            "explanation": result_json.get("explanation", content),
             "input_text": text
         })
 
     except Exception as e:
         print("Error calling Gemini API:", e)
         return jsonify({"error": str(e)}), 500
-
 # -------------------------
 # Run the app
 # -------------------------
